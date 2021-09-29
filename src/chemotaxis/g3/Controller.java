@@ -152,6 +152,9 @@ public class Controller extends chemotaxis.sim.Controller {
 	Hashtable<Point, Integer> point_to_node;
 	Point first_pt;
 	Point second_pt;
+	Point third_pt;
+	Point fourth_pt;
+	Point fifth_pt;
 
     /**
      * Controller constructor
@@ -229,19 +232,31 @@ public class Controller extends chemotaxis.sim.Controller {
 		ArrayList<Integer> shortest_path = g.dijkstra(g.matrix, startNode, targetNode);
 
 
+/*
 
 		int index_one = shortest_path.size() * 2 / 3;
-
 		int index_two = shortest_path.size() / 3;
+*/
+		int index_one = shortest_path.size() * 5 / 6;
+		int index_two = shortest_path.size() * 4 / 6;
+		int index_three = shortest_path.size() * 3 / 6;
+		int index_four = shortest_path.size() * 2 / 6;
+		int index_five = shortest_path.size() * 1 / 6;
 
 
 		int first_node = shortest_path.get(index_one);
 		int second_node = shortest_path.get(index_two);
+		int third_node = shortest_path.get(index_three);
+		int fourth_node = shortest_path.get(index_four);
+		int fifth_node = shortest_path.get(index_five);
 
 		first_pt = node_to_point.get(first_node);
-		System.out.println(first_pt);
+		//System.out.println(first_pt);
 		second_pt = node_to_point.get(second_node);
-		System.out.println(second_pt);
+		//System.out.println(second_pt);
+		third_pt = node_to_point.get(third_node);
+		fourth_pt = node_to_point.get(fourth_node);
+		fifth_pt = node_to_point.get(fifth_node);
 
 	}
 
@@ -279,19 +294,38 @@ public class Controller extends chemotaxis.sim.Controller {
 		 */
 		ChemicalPlacement chemicalPlacement = new ChemicalPlacement();
 
-		if(currentTurn%5 == 1){
+		if (currentTurn%7 == 1){
 			List<ChemicalType> chemicals = new ArrayList<>();
 			chemicals.add(ChemicalType.RED);
 			chemicalPlacement.location = new Point(this.first_pt.x, this.first_pt.y);
 			chemicalPlacement.chemicals = chemicals;
 		}
-		else if(currentTurn%5 == 2){
+		else if (currentTurn%7 == 2){
 			List<ChemicalType> chemicals = new ArrayList<>();
 			chemicals.add(ChemicalType.GREEN);
 			chemicalPlacement.location = new Point(this.second_pt.x, this.second_pt.y);
 			chemicalPlacement.chemicals = chemicals;
 		}
-		else if (currentTurn%5 == 3) {
+		else if (currentTurn%7 == 3) {
+			List<ChemicalType> chemicals = new ArrayList<>();
+			chemicals.add(ChemicalType.BLUE);
+			chemicalPlacement.location = new Point(this.third_pt.x, this.third_pt.y);
+			chemicalPlacement.chemicals = chemicals;
+
+		}
+		else if (currentTurn%7 == 4) {
+			List<ChemicalType> chemicals = new ArrayList<>();
+			chemicals.add(ChemicalType.RED);
+			chemicalPlacement.location = new Point(this.fourth_pt.x, this.fourth_pt.y);
+			chemicalPlacement.chemicals = chemicals;
+		}
+		else if (currentTurn%7 == 5) {
+			List<ChemicalType> chemicals = new ArrayList<>();
+			chemicals.add(ChemicalType.GREEN);
+			chemicalPlacement.location = new Point(this.fifth_pt.x, this.fifth_pt.y);
+			chemicalPlacement.chemicals = chemicals;
+		}
+		else if (currentTurn%7 == 6) {
 			List<ChemicalType> chemicals = new ArrayList<>();
 			chemicals.add(ChemicalType.BLUE);
 			chemicalPlacement.location = new Point(this.target.x, this.target.y);

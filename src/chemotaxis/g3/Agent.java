@@ -37,75 +37,69 @@ public class Agent extends chemotaxis.sim.Agent {
 		//see highest in hiarchy color is sees in its space or one immediately adjacent:
 		//(highest) blue, green, red (lowest)
 		//set that chemical to chosen chemical type
+		/*
+		store int in previousState as follows:
+			- 0: previous was red, follow green
+			- 1: previous was green, follow blue
+			- 2: previous was blue, follow red (but reach local maximum first)
+		 */
 		ChemicalType highest_priority = ChemicalType.RED;
 
-		if(currentCell.getConcentration(ChemicalType.BLUE) != 0)
-		{
+		// Check for local blue maximum condition
+
+
+
+		if (previousState == 0) {
+			highest_priority = ChemicalType.RED;
+		} else if (previousState == 1) {
+			highest_priority = ChemicalType.GREEN;
+		} else if (previousState == 2) {
 			highest_priority = ChemicalType.BLUE;
 		}
-		else if(currentCell.getConcentration(ChemicalType.GREEN) != 0)
-		{
-			highest_priority = ChemicalType.GREEN;
+		move.currentState = previousState;
+
+
+		boolean max_reached = false;
+		int max_count = 0;
+		for (DirectionType directionType : neighborMap.keySet()) {
+			if (neighborMap.get(directionType).getConcentration(highest_priority) <
+					currentCell.getConcentration(highest_priority)) {
+				max_count++;
+			}
+		}
+
+		if (max_count == 4) {
+			max_reached = true;
 		}
 
 		for(DirectionType directionType : neighborMap.keySet())
 		{
-			if(neighborMap.get(directionType).getConcentration(ChemicalType.BLUE) != 0)
-			{
+
+			if(neighborMap.get(directionType).getConcentration(ChemicalType.BLUE) != 0 && previousState == 1
+				&& max_reached) {
+
 				highest_priority = ChemicalType.BLUE;
+				move.currentState = (byte) 2;
+				System.out.println("green to blue 2");
 			}
-			else if(highest_priority != ChemicalType.BLUE &&
-					(neighborMap.get(directionType).getConcentration(ChemicalType.GREEN) != 0))
-			{
+			else if((neighborMap.get(directionType).getConcentration(ChemicalType.RED) != 0) && previousState == 2
+					&& max_reached) {
+				highest_priority = ChemicalType.RED;
+				move.currentState = (byte) 0;
+				System.out.println("blue to red 2");
+			}
+			else if((neighborMap.get(directionType).getConcentration(ChemicalType.GREEN) != 0) && previousState == 0
+					&& max_reached) {
+
 				highest_priority = ChemicalType.GREEN;
+				move.currentState = (byte) 1;
+				System.out.println("red to green 2");
 			}
 		}
 
 		ChemicalType chosenChemicalType = highest_priority;
 
 
-
-		/*
-		Behavior 1: Doesn't detect anything -- go in a spiral
-		 */
-
-		/*
-		Behavior 2: Detect that agent is "stuck" somewhere
-
-
-		1. Predict concentration of all 3 colors (note that if a given cell as (0,0,0), it is considered a block)
-
-		2a. If last 3 digits of prediction < 256 (i.e. 0.3123)
-			- Store last three digits (i.e. 123)
-
-		2b If last 3 digits of prediction > 256 (i.e. 0.4567)
-			- Store last two digits (i.e. 67)
-
-		 */
-
-		/*
-		0. Compare prediction (stored in previousState) to current cell.
-			- If it's a match we're stuck -- move on to some random behavior.
-			- If not do new prediction with steps below.
-			- Initial value of previousState = 0
-		 */
-
-		/*
-		double currentConcentration = currentCell.getConcentration(ChemicalType.RED) +
-									currentCell.getConcentration(ChemicalType.GREEN) +
-									currentCell.getConcentration(ChemicalType.BLUE);
-
-		if (currentConcentration == previousState) {
-
-			System.out.println("prediction matches");
-
-		} else {
-
-			System.out.println("prediction doesn't match");
-		}*/
-
-		System.out.println("Random Num: ");
-		System.out.println(Math.abs(randomNum%4));
 
 		//note: if all the concentrations are zero it will move in the direction
 		//of the last direction iterated through
@@ -114,7 +108,6 @@ public class Agent extends chemotaxis.sim.Agent {
 		for (DirectionType directionType : neighborMap.keySet()) {
 			if (neighborMap.get(directionType).getConcentration(chosenChemicalType) == 0) {
 				zero_count++;
-				System.out.println(zero_count);
 			}
 			if (highestConcentration <= neighborMap.get(directionType).getConcentration(chosenChemicalType)) {
 				highestConcentration = neighborMap.get(directionType).getConcentration(chosenChemicalType);
