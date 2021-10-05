@@ -35,7 +35,7 @@ public class Agent extends chemotaxis.sim.Agent {
 	public Move makeMove(Integer randomNum, Byte previousState, ChemicalCell currentCell, Map<DirectionType, ChemicalCell> neighborMap) {
 		Move move = new Move();
 
-		//see highest in hiarchy color is sees in its space or one immediately adjacent:
+		//see highest in hierarchy color is sees in its space or one immediately adjacent:
 		//(highest) blue, green, red (lowest)
 		//set that chemical to chosen chemical type
 		ChemicalType highest_priority = ChemicalType.RED;

@@ -1,6 +1,5 @@
 package chemotaxis.g3;
 import java.awt.Point;
-import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ArrayList;
@@ -12,10 +11,11 @@ import java.lang.Math;
 
 public class Controller extends chemotaxis.sim.Controller {
 	static class Graph {
-		//fields
+		// Graph class fields
 		int vertices;
 		int matrix[][];
-		//constructor
+		public static final int NO_PARENT = -1;
+		// Graph class constructor
 		public Graph(int size) {
 			this.vertices = size;
 			matrix = new int[size][size];
@@ -25,7 +25,6 @@ public class Controller extends chemotaxis.sim.Controller {
 			matrix[source][dest] = 1;
 			matrix[dest][source] = 1;
 		}
-		public static final int NO_PARENT = -1;
 		public static ArrayList<Integer> dijkstra(int[][] adjacencyMatrix, int startVertex, int targetVertex) {
 			int nVertices = adjacencyMatrix[0].length;
 			// shortestDistances[i] holds shortest distance from src to i
@@ -71,14 +70,16 @@ public class Controller extends chemotaxis.sim.Controller {
 			return returnPath(targetVertex, prev);
 		}
 		public static ArrayList<Integer> returnPath(int target, int[] prev) {
-			ArrayList<Integer> result = new ArrayList<Integer>();
+			ArrayList<Integer> result = new ArrayList<>();
 			while (prev[target] != NO_PARENT) {
 				result.add(target);
 				target = prev[target];
-			};
+			}
 			return result;
 		}
 	}
+
+	// Controller class fields
 	ArrayList<Integer> shortest_path;
 	Hashtable<Integer, Point> node_to_point;
 	Hashtable<Point, Integer> point_to_node;
@@ -99,14 +100,15 @@ public class Controller extends chemotaxis.sim.Controller {
 	 * @param simPrinter  simulation printer
 	 *
 	 */
+	// Controller class constructor
 	public Controller(Point start, Point target, Integer size, ChemicalCell[][] grid, Integer simTime, Integer budget, Integer seed, SimPrinter simPrinter, Integer agentGoal, Integer spawnFreq) {
 		super(start, target, size, grid, simTime, budget, seed, simPrinter, agentGoal, spawnFreq);
-
-		// dijkestra: https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/
 		shortest_path = new ArrayList<Integer>();
 		node_to_point = new Hashtable<Integer, Point>();
 		point_to_node = new Hashtable<Point, Integer>();
 		int k = 0;
+		// adding associations between each point in the grid given and an integer node key that we assign to those points
+		// in order to use it the graph-find-shortes-path algorithm
 		for (int i = 0; i < grid.length; i++) {
 			for (int j = 0; j < grid[0].length; j++) {
 				if (grid[i][j].isOpen()) {
@@ -117,6 +119,7 @@ public class Controller extends chemotaxis.sim.Controller {
 				}
 			}
 		}
+		// instantiate graph g to represent the grid param
 		Graph g = new Graph(node_to_point.size());
 		for(int i = 0; i < node_to_point.size(); i++)
 		{
@@ -144,26 +147,25 @@ public class Controller extends chemotaxis.sim.Controller {
 				g.addEdge(i, point_to_node.get(right));
 			}
 		}
+
+
+        // call dijkstra to record the shortest path from start to target
+        // - NOTE: the shortest path array is reversed and does not include the start and end points.
+        // i.e. if the shortest path from 0 to 7 is 0, 1, 5, 4, 7
+		// in the shortest_path arraylist it is recorded as 4, 5, 1
 		Integer startNode = point_to_node.get(start);
 		Integer targetNode = point_to_node.get(target);
-        /*
-        call dijkstra to record the shortest path from start to target
-            - NOTE: the shortest path array is reversed and does not include the start and end points.
-            (i.e. if the shortest path from 0 to 7 is 0, 1, 5, 4, 7
-            in the shortest_path arraylist it is recorded as 4, 5, 1)
-         */
-		ArrayList<Integer> shortest_path = g.dijkstra(g.matrix, startNode, targetNode);
+		ArrayList<Integer> shortest_path = Graph.dijkstra(g.matrix, startNode, targetNode);
+
+		// calculate the point in grid to put the red and green chemicals
 		int index_one = shortest_path.size() * 2 / 3;
 		int index_two = shortest_path.size() / 3;
 		int first_node = shortest_path.get(index_one);
 		int second_node = shortest_path.get(index_two);
-
 		this.shortestPathLength= shortest_path.size();
-
 		first_pt = node_to_point.get(first_node);
-		System.out.println(first_pt);
 		second_pt = node_to_point.get(second_node);
-		System.out.println(second_pt);
+
 		//agent goal 50
 		//spawnfreq 5
 		//at turn 250 last agent spawned
@@ -174,7 +176,6 @@ public class Controller extends chemotaxis.sim.Controller {
 
 		// adding ahortestPathLength to the calculation
 		//this.period = (((spawnFreq * agentGoal) + this.shortestPathLength) / this.budget) * 3;
-
 		double calc = (double)spawnFreq * agentGoal / this.budget;
 		this.period = (int)Math.ceil(calc * 3);
 		if(this.period <4){
@@ -182,7 +183,8 @@ public class Controller extends chemotaxis.sim.Controller {
 		}
 	}
 
-	public int closestToTarget(ArrayList<Point> locations) {
+	//default function, unused
+/*	public int closestToTarget(ArrayList<Point> locations) {
 		int closestDistance = 9999999;
 		int closestIdx = 0;
 		for(int i = 0; i < locations.size(); i++) {
@@ -195,7 +197,8 @@ public class Controller extends chemotaxis.sim.Controller {
 			}
 		}
 		return closestIdx;
-	}
+	}*/
+
 	/**
 	 * Apply chemicals to the map
 	 *
@@ -214,7 +217,7 @@ public class Controller extends chemotaxis.sim.Controller {
         lower concentrations nearer to the spawn block)“
          */
 		ChemicalPlacement chemicalPlacement = new ChemicalPlacement();
-
+		// calculate how many agents have reached target point
 		int agentReached = 0;
 		for(int i = 0; i < locations.size(); i++){
 			if (locations.get(i).equals(this.target)){
@@ -222,6 +225,10 @@ public class Controller extends chemotaxis.sim.Controller {
 			}
 		}
 
+		// place the chemicals
+		// red at the first turn after simulation starts, and the first turn for every subsequent period
+		// green at the second turn after simulation starts, and the second turn for every subsequent period
+		// blue at the third turn after simulation starts, and the third turn for every subsequent period, and when there is only one chemical remaining
 		if(chemicalsRemaining == 1 || currentTurn%this.period ==3){
 			List<ChemicalType> chemicals = new ArrayList<>();
 			chemicals.add(ChemicalType.BLUE);
@@ -240,6 +247,8 @@ public class Controller extends chemotaxis.sim.Controller {
 			chemicalPlacement.location = new Point(this.second_pt.x, this.second_pt.y);
 			chemicalPlacement.chemicals = chemicals;
 		}
+		// refresh period, accounting for agents lost due to clogging at start point
+		// make sure to hold the gradient for all agents not yet reached target with the chemicals remaining
 		else if (currentTurn%this.period == 0) {
 			//calculate based on agents not spawned yet
 			//this.period = ((spawnFreq * (agentGoal-locations.size()) + this.shortestPathLength) / chemicalsRemaining) *3;
@@ -251,7 +260,6 @@ public class Controller extends chemotaxis.sim.Controller {
 			if(this.period <4){
 				this.period = 4;
 			}
-			System.out.println("refreshed period is " + this.period);
 		}
 		return chemicalPlacement;
 	}
