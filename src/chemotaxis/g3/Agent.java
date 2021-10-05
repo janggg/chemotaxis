@@ -73,8 +73,6 @@ public class Agent extends chemotaxis.sim.Agent {
 		}
 
 		// set the direction of the agent if chemicals are detected
-		// note: if all the concentrations are zero it will move in the direction
-		// of the last direction iterated through
 		double highestConcentration = currentCell.getConcentration(chosenChemicalType);
 		for (DirectionType directionType : neighborMap.keySet()) {
 			if (neighborMap.get(directionType).getConcentration(chosenChemicalType) == 0) {
