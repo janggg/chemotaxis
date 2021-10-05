@@ -35,11 +35,10 @@ public class Agent extends chemotaxis.sim.Agent {
 	public Move makeMove(Integer randomNum, Byte previousState, ChemicalCell currentCell, Map<DirectionType, ChemicalCell> neighborMap) {
 		Move move = new Move();
 
-		//see highest in hierarchy color is sees in its space or one immediately adjacent:
-		//(highest) blue, green, red (lowest)
-		//set that chemical to chosen chemical type
+		// see highest in hierarchy color is sees in its space or one immediately adjacent:
+		// (highest) blue, green, red (lowest)
+		// set that chemical to chosen chemical type
 		ChemicalType highest_priority = ChemicalType.RED;
-
 		if(currentCell.getConcentration(ChemicalType.BLUE) != 0)
 		{
 			highest_priority = ChemicalType.BLUE;
@@ -48,7 +47,6 @@ public class Agent extends chemotaxis.sim.Agent {
 		{
 			highest_priority = ChemicalType.GREEN;
 		}
-
 		for(DirectionType directionType : neighborMap.keySet())
 		{
 			if(neighborMap.get(directionType).getConcentration(ChemicalType.BLUE) != 0)
@@ -64,7 +62,7 @@ public class Agent extends chemotaxis.sim.Agent {
 
 		ChemicalType chosenChemicalType = highest_priority;
 
-
+		// initialize the previousState byte using the random number provided
 		if(previousState==0)
 		{
 			move.currentState = (byte)(Math.abs(randomNum%4) + 1);
@@ -74,9 +72,9 @@ public class Agent extends chemotaxis.sim.Agent {
 			move.currentState = previousState;
 		}
 
-
-		//note: if all the concentrations are zero it will move in the direction
-		//of the last direction iterated through
+		// set the direction of the agent if chemicals are detected
+		// note: if all the concentrations are zero it will move in the direction
+		// of the last direction iterated through
 		double highestConcentration = currentCell.getConcentration(chosenChemicalType);
 		for (DirectionType directionType : neighborMap.keySet()) {
 			if (neighborMap.get(directionType).getConcentration(chosenChemicalType) == 0) {
@@ -86,10 +84,12 @@ public class Agent extends chemotaxis.sim.Agent {
 				move.directionType = directionType;
 			}
 		}
+		// set a new state for that agent (every randomNum%3 == 2 turn), to avoid repeated collisions
 		if(randomNum%3 == 2)
 		{
 			move.currentState = (byte)(Math.abs(randomNum%4) + 1);
 		}
+		// agent movement in absence of chemicals
 		/* all surrounding cells have no chemical
 		Direction based on randNum%4
 			- 0: right
@@ -109,12 +109,13 @@ public class Agent extends chemotaxis.sim.Agent {
 				priority = DirectionType.WEST;
 
 			}
+			// if the point where agent wants to randomly move to is open, go to that point
 			if(neighborMap.get(priority).isOpen())
 			{
 				move.directionType = priority;
 			}
 			else
-			{
+			{// if the point is blocked, search for viable directions to go to and choose one randomly
 				ArrayList<DirectionType> options = new ArrayList<DirectionType>();
 				for (DirectionType directionType : neighborMap.keySet()) {
 					if(neighborMap.get(directionType).isOpen())
@@ -126,6 +127,7 @@ public class Agent extends chemotaxis.sim.Agent {
 				{
 					move.directionType = options.get(randomNum%options.size());
 				}
+				// set a new state for that agent
 				move.currentState = (byte)(Math.abs(randomNum%4) + 1);
 			}
 		}
